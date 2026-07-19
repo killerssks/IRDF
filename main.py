@@ -20,8 +20,22 @@ app = FastAPI(title="ROBLOCKSEC Forensics WORKSTATION API", version="2.0.0")
 
 # Workspace root path lookup
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
-DB_PATH = os.path.join(BASE_DIR, "roblocksec_vault.db")
+
+if os.environ.get("VERCEL"):
+    UPLOADS_DIR = "/tmp/uploads"
+    DB_PATH = "/tmp/roblocksec_vault.db"
+    
+    # Copy seed database if it exists in BASE_DIR to /tmp/roblocksec_vault.db
+    original_db = os.path.join(BASE_DIR, "roblocksec_vault.db")
+    if os.path.exists(original_db) and not os.path.exists(DB_PATH):
+        import shutil
+        try:
+            shutil.copy2(original_db, DB_PATH)
+        except Exception as e:
+            print("Failed to copy database to /tmp:", e)
+else:
+    UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
+    DB_PATH = os.path.join(BASE_DIR, "roblocksec_vault.db")
 
 # Create uploads directory if not present
 os.makedirs(UPLOADS_DIR, exist_ok=True)
