@@ -1,0 +1,237 @@
+openapi: 3.0.3
+info:
+  title: Enterprise AI-Powered DFIR Platform API
+  description: REST API Specifications for the Enterprise AI Digital Forensics & Incident Response Platform (AI-DFIR Suite).
+  version: 1.0.0
+servers:
+  - url: /api/v1
+    description: Core API Gateway Endpoint
+paths:
+  /cases:
+    get:
+      summary: Retrieve all active cases
+      description: Returns a list of cases filtered by priority, severity, or assignee.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [OPEN, IN_INVESTIGATION, CONTAINED, RESOLVED, CLOSED]
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: A list of cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Case'
+    post:
+      summary: Create a new case
+      description: Initializes a new case folder and triggers SLA counters.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaseCreate'
+      responses:
+        '201':
+          description: Case successfully initialized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Case'
+
+  /cases/{caseId}/timeline:
+    get:
+      summary: Get parsed chronological timeline
+      description: Returns a sorted array of chronological logs parsed from mounted images and logs.
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: eventType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PROCESS, NETWORK, REGISTRY, FILE, DETECTED_ALERT]
+      responses:
+        '200':
+          description: Timeline retrieval success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TimelineEvent'
+
+  /evidence/upload:
+    post:
+      summary: Upload an evidence file
+      description: Sends a file (such as VMDK, E01, PCAP, RAW, or memory dump) to the ingestion pipeline.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                caseId:
+                  type: string
+                  format: uuid
+                evidenceType:
+                  type: string
+                  enum: [DISK, MEM, PCAP, LOG, BINARY]
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '202':
+          description: Upload accepted and queued for hashing/parsing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  evidenceId:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    example: QUEUED
+
+  /copilot/chat:
+    post:
+      summary: Prompt AI Copilot
+      description: Submits a query about case data, generating correlation, analysis summaries, or mitigation scripts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - caseId
+                - prompt
+              properties:
+                caseId:
+                  type: string
+                  format: uuid
+                prompt:
+                  type: string
+                  example: "Find persistence in this memory dump"
+      responses:
+        '200':
+          description: AI Copilot analysis response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+                  confidenceScore:
+                    type: number
+                    format: float
+                    example: 0.95
+                  sources:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        id:
+                          type: string
+
+components:
+  schemas:
+    Case:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+        severity:
+          type: string
+        priority:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CaseCreate:
+      type: object
+      required:
+        - name
+        - severity
+        - priority
+      properties:
+        name:
+          type: string
+          example: "APT29 Phishing Workspace"
+        severity:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        department:
+          type: string
+          example: "Security Operations"
+        tags:
+          type: array
+          items:
+            type: string
+    TimelineEvent:
+      type: object
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        eventType:
+          type: string
+        hostName:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+        mitreMapping:
+          type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []

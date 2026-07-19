@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WebSocketMessageSchema",
+  "description": "JSON schema for real-time messages exchanged over the AI-DFIR WebSocket connection.",
+  "type": "object",
+  "required": ["event", "timestamp", "data"],
+  "properties": {
+    "event": {
+      "type": "string",
+      "enum": ["TASK_PROGRESS", "NEW_ALERT", "LIVE_LOG_LINE"],
+      "description": "The class of event being broadcasted."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the event occurred on the server."
+    },
+    "data": {
+      "type": "object",
+      "oneOf": [
+        {
+          "title": "TaskProgressPayload",
+          "required": ["taskId", "caseId", "percentageComplete", "status", "currentAction"],
+          "properties": {
+            "taskId": { "type": "string", "format": "uuid" },
+            "caseId": { "type": "string", "format": "uuid" },
+            "evidenceId": { "type": "string", "format": "uuid" },
+            "engine": { "type": "string", "example": "VOLATILITY_3" },
+            "percentageComplete": { "type": "number", "minimum": 0, "maximum": 100 },
+            "status": { "type": "string", "enum": ["QUEUED", "PROCESSING", "SUCCESS", "FAILURE"] },
+            "currentAction": { "type": "string", "example": "Running windows.malfind plugin" }
+          }
+        },
+        {
+          "title": "NewAlertPayload",
+          "required": ["alertId", "caseId", "severity", "message"],
+          "properties": {
+            "alertId": { "type": "string", "format": "uuid" },
+            "caseId": { "type": "string", "format": "uuid" },
+            "severity": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+            "message": { "type": "string", "example": "YARA signature match: PoisonIvy backdoor detected in win11_mem.raw" },
+            "mitreTechnique": { "type": "string", "example": "T1059" }
+          }
+        },
+        {
+          "title": "LiveLogLinePayload",
+          "required": ["taskId", "logLine"],
+          "properties": {
+            "taskId": { "type": "string", "format": "uuid" },
+            "logLine": { "type": "string", "example": "Volatility3: scanning physical memory offsets..." }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,73 @@
+digraph Neo4jDFIRSchema {
+    // Styling
+    rankdir=LR;
+    fontname="Inter,Sans-Serif";
+    fontsize=12;
+    node [
+        fontname="JetBrains Mono,Monospace",
+        fontsize=10,
+        shape=record,
+        style="filled,rounded",
+        fillcolor="#F3F4F6",
+        color="#D1D5DB"
+    ];
+    edge [
+        fontname="Inter,Sans-Serif",
+        fontsize=9,
+        color="#9CA3AF",
+        arrowsize=0.8
+    ];
+
+    // Node Definitions
+    User [
+        fillcolor="#E0F2FE", // Soft Cyan
+        color="#0284C7",
+        label="{ User | username: String\ldomain: String\lprivileges: String\l }"
+    ];
+
+    Host [
+        fillcolor="#EEF2F6", // Slate
+        color="#475569",
+        label="{ Host | id: UUID\lhostname: String\lipAddress: String\losType: String\ldomain: String\l }"
+    ];
+
+    Process [
+        fillcolor="#FFE4E6", // Soft Red
+        color="#E11D48",
+        label="{ Process | pid: Integer\lname: String\lpath: String\lcommandLine: String\lsha256: String\l }"
+    ];
+
+    File [
+        fillcolor="#FEF3C7", // Soft Amber
+        color="#D97706",
+        label="{ File | path: String\lname: String\lsha256: String\lsize: Long\lentropy: Float\l }"
+    ];
+
+    IPAddress [
+        fillcolor="#DCFCE7", // Soft Green
+        color="#16A34A",
+        label="{ IPAddress | ip: String\lcountry: String\lasn: String\lreputation: Integer\l }"
+    ];
+
+    Domain [
+        fillcolor="#F3E8FF", // Soft Purple
+        color="#9333EA",
+        label="{ Domain | domainName: String\lregistrar: String\lcreationDate: Timestamp\l }"
+    ];
+
+    RegistryKey [
+        fillcolor="#E0F2FE", // Soft Blue
+        color="#2563EB",
+        label="{ RegistryKey | keyPath: String\lvalueName: String\lvalueData: String\l }"
+    ];
+
+    // Relationship Edges
+    User -> Host [label="LOGGED_IN_USER"];
+    Host -> Process [label="RUNNING_PROCESS"];
+    Process -> Process [label="SPAWNED"];
+    Process -> File [label="WROTE"];
+    Process -> File [label="READ"];
+    Process -> IPAddress [label="OPENED_SOCKET"];
+    Process -> RegistryKey [label="MODIFIED_REGISTRY"];
+    IPAddress -> Domain [label="RESOLVES_TO"];
+}

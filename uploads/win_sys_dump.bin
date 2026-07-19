@@ -1,0 +1,1 @@
+ALERT_FLAG: Detected credential extraction utility mimikatz inside local lsass dump handles.

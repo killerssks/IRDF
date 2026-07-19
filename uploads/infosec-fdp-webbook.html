@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demystifying Information Security — FDP Webbook</title>
+<style>
+  /* ── DESIGN TOKENS ── */
+  :root {
+    --bg:          #0d1117;
+    --surface:     #161b22;
+    --surface2:    #1c2333;
+    --border:      #30363d;
+    --accent:      #58a6ff;
+    --accent2:     #3fb950;
+    --warn:        #f0883e;
+    --danger:      #f85149;
+    --text:        #e6edf3;
+    --muted:       #8b949e;
+    --heading-font: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --body-font:    'Inter', 'Segoe UI', system-ui, sans-serif;
+    --mono-font:    'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body-font);
+    font-size: 16px;
+    line-height: 1.75;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 260px;
+    height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 0 0 2rem;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    padding: 1.5rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+  }
+  .sidebar-logo .shield {
+    font-size: 1.8rem;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  .sidebar-logo h2 {
+    font-family: var(--heading-font);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1.3;
+  }
+  .sidebar-logo p {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  .nav-section {
+    padding: 0.25rem 0;
+  }
+  .nav-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    padding: 0.75rem 1.25rem 0.25rem;
+  }
+  .nav-item {
+    display: block;
+    padding: 0.45rem 1.25rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+    text-decoration: none;
+    border-left: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .nav-item:hover {
+    color: var(--text);
+    background: rgba(88,166,255,0.06);
+    border-left-color: var(--accent);
+  }
+  .nav-item.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(88,166,255,0.08);
+    font-weight: 600;
+  }
+  .nav-sub {
+    padding-left: 2rem;
+    font-size: 0.78rem;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    grid-column: 2;
+    max-width: 860px;
+    padding: 3rem 3rem 6rem;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #1a2540 0%, #0d1117 60%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 3rem 2.5rem;
+    margin-bottom: 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(88,166,255,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    background: rgba(88,166,255,0.12);
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 4px;
+    padding: 0.2rem 0.6rem;
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-family: var(--heading-font);
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    font-size: 1rem;
+    color: var(--muted);
+    max-width: 560px;
+    margin-bottom: 1.5rem;
+  }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
+
+  /* ── PAGE / CHAPTER HEADINGS ── */
+  .page-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.5rem;
+    margin-bottom: 2.5rem;
+    margin-top: 4rem;
+  }
+  .page-header:first-of-type { margin-top: 0; }
+  .page-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent2);
+    margin-bottom: 0.5rem;
+  }
+  h2.page-title {
+    font-family: var(--heading-font);
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  h3 {
+    font-family: var(--heading-font);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 2rem 0 0.75rem;
+    padding-top: 0.5rem;
+  }
+  h4 {
+    font-family: var(--heading-font);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 1.5rem 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  p { margin-bottom: 1rem; color: #c9d1d9; }
+
+  /* ── CALLOUT BLOCKS ── */
+  .callout {
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 1.5rem 0;
+    border-left: 4px solid;
+    font-size: 0.92rem;
+  }
+  .callout-info {
+    background: rgba(88,166,255,0.08);
+    border-color: var(--accent);
+    color: #a8ccf0;
+  }
+  .callout-tip {
+    background: rgba(63,185,80,0.08);
+    border-color: var(--accent2);
+    color: #a3d9a5;
+  }
+  .callout-warn {
+    background: rgba(240,136,62,0.08);
+    border-color: var(--warn);
+    color: #f0c27e;
+  }
+  .callout-danger {
+    background: rgba(248,81,73,0.08);
+    border-color: var(--danger);
+    color: #f4a6a2;
+  }
+  .callout strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    opacity: 0.8;
+  }
+
+  /* ── SCREENSHOT PLACEHOLDER ── */
+  .screenshot {
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: 1.5rem;
+    margin: 1.25rem 0;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .screenshot span { font-size: 1.4rem; display: block; margin-bottom: 0.4rem; }
+
+  /* ── STEP CARDS ── */
+  .steps { counter-reset: step; margin: 1.5rem 0; }
+  .step {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    align-items: start;
+  }
+  .step-num {
+    counter-increment: step;
+    width: 2.2rem; height: 2.2rem;
+    border-radius: 50%;
+    background: rgba(88,166,255,0.12);
+    border: 1.5px solid rgba(88,166,255,0.4);
+    color: var(--accent);
+    font-family: var(--heading-font);
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-body { padding-top: 0.2rem; }
+  .step-body p { margin-bottom: 0.5rem; }
+
+  /* ── CODE ── */
+  code {
+    font-family: var(--mono-font);
+    font-size: 0.85em;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.15em 0.45em;
+    color: #f78166;
+  }
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #a5d6ff;
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.88rem;
+  }
+  th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-family: var(--heading-font);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: #c9d1d9;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(88,166,255,0.03); }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; margin: 1rem 0; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+    font-size: 0.92rem;
+    color: #c9d1d9;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-box {
+    width: 1.2rem; height: 1.2rem;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    background: var(--surface);
+  }
+
+  /* ── CIA TRIAD CARDS ── */
+  .triad-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .triad-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  .triad-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .triad-card h4 {
+    font-size: 0.95rem;
+    color: var(--text);
+    margin: 0 0 0.5rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .triad-card p { font-size: 0.82rem; color: var(--muted); margin: 0; }
+
+  /* ── LAB HEADER ── */
+  .lab-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .lab-icon { font-size: 2rem; flex-shrink: 0; }
+  .lab-meta { flex: 1; }
+  .lab-meta h3 { margin: 0 0 0.25rem; font-size: 1.05rem; padding: 0; }
+  .lab-meta p { margin: 0; font-size: 0.8rem; color: var(--muted); }
+  .lab-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: rgba(63,185,80,0.15);
+    color: var(--accent2);
+    border: 1px solid rgba(63,185,80,0.3);
+    white-space: nowrap;
+  }
+
+  /* ── CRYPTO COMPARE ── */
+  .crypto-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .crypto-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem;
+  }
+  .crypto-card h4 {
+    font-size: 0.88rem;
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .crypto-card p { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.5rem; }
+  .crypto-pill {
+    display: inline-block;
+    font-size: 0.68rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .pill-rev { background: rgba(88,166,255,0.15); color: var(--accent); }
+  .pill-key { background: rgba(240,136,62,0.15); color: var(--warn); }
+  .pill-one { background: rgba(248,81,73,0.15); color: var(--danger); }
+
+  /* ── ACTION PLAN ── */
+  .action-steps {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .action-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+  }
+  .action-num {
+    font-family: var(--heading-font);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    opacity: 0.3;
+    line-height: 1;
+    margin-bottom: 0.75rem;
+  }
+  .action-card h4 {
+    font-size: 0.92rem;
+    margin: 0 0 0.5rem;
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .action-card p { font-size: 0.8rem; color: var(--muted); margin: 0; }
+
+  /* ── RESOURCE LINKS ── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1.25rem 0;
+  }
+  .resource-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    text-decoration: none;
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .resource-link:hover {
+    border-color: var(--accent);
+    background: rgba(88,166,255,0.06);
+    color: var(--accent);
+  }
+  .resource-link .rl-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .resource-link .rl-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; font-weight: 400; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 3rem 0;
+  }
+
+  /* ── OBJECTIVES LIST ── */
+  .obj-list { list-style: none; margin: 1rem 0; }
+  .obj-list li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.6rem 0;
+    font-size: 0.92rem;
+    color: #c9d1d9;
+    border-bottom: 1px solid rgba(48,54,61,0.5);
+  }
+  .obj-list li:last-child { border-bottom: none; }
+  .obj-check { color: var(--accent2); flex-shrink: 0; font-size: 1rem; margin-top: 0.05rem; }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    body { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .main { grid-column: 1; margin-left: 0; padding: 2rem 1.25rem 4rem; }
+    .triad-grid, .crypto-grid, .action-steps { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <span class="shield">🛡️</span>
+    <h2>Demystifying<br>Information Security</h2>
+    <p>FDP Companion Webbook · 90 min</p>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Getting Started</div>
+    <a class="nav-item active" href="#intro">🏠 Introduction & Setup</a>
+    <a class="nav-item nav-sub" href="#objectives">Learning Objectives</a>
+    <a class="nav-item nav-sub" href="#checklist">Before We Begin</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Chapter 1</div>
+    <a class="nav-item" href="#ch1">📖 Threat Landscape</a>
+    <a class="nav-item nav-sub" href="#why-unis">Why Universities?</a>
+    <a class="nav-item nav-sub" href="#cia">The CIA Triad</a>
+    <a class="nav-item nav-sub" href="#mfa">MFA & Zero Trust</a>
+    <a class="nav-item nav-sub" href="#human-fw">Human Firewall</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Chapter 2 — Labs</div>
+    <a class="nav-item" href="#ch2">🛠️ Defender's Toolkit</a>
+    <a class="nav-item nav-sub" href="#lab1">Lab 1: Have I Been Pwned</a>
+    <a class="nav-item nav-sub" href="#lab2">Lab 2: CyberChef</a>
+    <a class="nav-item nav-sub" href="#lab3">Lab 3: Email Headers</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Chapter 3</div>
+    <a class="nav-item" href="#ch3">🧠 Classroom Integration</a>
+    <a class="nav-item nav-sub" href="#syllabi">Cross-Discipline Ideas</a>
+    <a class="nav-item nav-sub" href="#action-plan">3-Step Action Plan</a>
+    <a class="nav-item nav-sub" href="#resources">Further Resources</a>
+  </div>
+</nav>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<main class="main">
+
+  <!-- ═══ HERO ═══ -->
+  <div class="hero">
+    <div class="hero-tag">Faculty Development Program · 90 Minutes</div>
+    <h1>Demystifying<br><span>Information Security</span></h1>
+    <p>From Concepts to Practice — a browser-only, hands-on guide for university faculty across all disciplines.</p>
+    <div class="hero-meta">
+      <span>🕐 90-Minute Session</span>
+      <span>💻 Zero Software Installation</span>
+      <span>🎓 Technical & Non-Technical Audiences</span>
+      <span>📖 Async Reference Manual</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PAGE 1 — INTRODUCTION & SETUP
+  ══════════════════════════════════════════════ -->
+  <section id="intro">
+    <div class="page-header">
+      <div class="page-badge">🏠 Introduction & Setup — Page 1 of 4</div>
+      <h2 class="page-title">Welcome to the Session</h2>
+    </div>
+
+    <p>Congratulations — you are already doing the most important thing: showing up to learn. Information security can feel like a domain that belongs exclusively to IT departments, written in impenetrable jargon, full of frightening headlines. Today, we're going to change that.</p>
+
+    <p>This webbook is your companion for the next 90 minutes <em>and</em> your personal reference manual long after the session ends. Every exercise, every concept, every link lives here. You do not need to take frantic notes — focus on the experience, and return to these pages any time.</p>
+
+    <div class="callout callout-info">
+      <strong>📌 How to use this guide</strong>
+      Follow along during the live session using the sidebar navigation. After the FDP, bookmark this page and share it with colleagues. All labs require only a modern browser — Chrome or Firefox recommended.
+    </div>
+
+    <h3 id="objectives">Learning Objectives</h3>
+    <p>By the end of this 90-minute session, you will be able to:</p>
+
+    <ul class="obj-list">
+      <li><span class="obj-check">✦</span> Explain why universities and academic institutions are high-value targets for cybercriminals, using real-world examples.</li>
+      <li><span class="obj-check">✦</span> Define and apply the CIA Triad (Confidentiality, Integrity, Availability) to everyday academic scenarios.</li>
+      <li><span class="obj-check">✦</span> Describe the concepts of Multi-Factor Authentication (MFA), Zero Trust architecture, and the Human Firewall.</li>
+      <li><span class="obj-check">✦</span> Use <strong>haveibeenpwned.com</strong> to check whether your credentials have been exposed in a data breach — and know exactly what to do next.</li>
+      <li><span class="obj-check">✦</span> Operate <strong>CyberChef</strong> to distinguish between encoding, encryption, and hashing — three commonly confused security concepts.</li>
+      <li><span class="obj-check">✦</span> Analyse raw email headers using free browser tools to identify phishing attempts and spoofed senders.</li>
+      <li><span class="obj-check">✦</span> Identify at least one concrete way to integrate information security topics into your own course syllabus.</li>
+      <li><span class="obj-check">✦</span> Leave with a personalised, three-step security action plan you can implement immediately.</li>
+    </ul>
+
+    <h3 id="checklist">Before We Begin — Your Setup Checklist</h3>
+    <p>Please complete the following before the session facilitator begins. This takes less than three minutes and will make your experience seamless.</p>
+
+    <ul class="checklist">
+      <li>
+        <div class="check-box"></div>
+        <div><strong>Open a modern browser.</strong> Google Chrome or Mozilla Firefox is strongly recommended. Microsoft Edge (Chromium) also works. Internet Explorer is not supported.</div>
+      </li>
+      <li>
+        <div class="check-box"></div>
+        <div><strong>Open Tab 1 — This Webbook.</strong> Keep this page open throughout the session. Bookmark it now (Ctrl+D / Cmd+D).</div>
+      </li>
+      <li>
+        <div class="check-box"></div>
+        <div><strong>Open Tab 2 — Have I Been Pwned.</strong> Navigate to <code>haveibeenpwned.com</code> and leave it ready.</div>
+      </li>
+      <li>
+        <div class="check-box"></div>
+        <div><strong>Open Tab 3 — CyberChef.</strong> Navigate to <code>gchq.github.io/CyberChef</code>. (Yes, this tool is made by British intelligence — and it's freely available to everyone.)</div>
+      </li>
+      <li>
+        <div class="check-box"></div>
+        <div><strong>Open Tab 4 — Google Admin Toolbox.</strong> Navigate to <code>toolbox.googleapps.com/apps/messageheader</code>.</div>
+      </li>
+      <li>
+        <div class="check-box"></div>
+        <div><strong>Locate a recent email.</strong> Find one email in your inbox — any email — that you can open. We will use its raw headers in Lab 3. You will not need to share this with anyone.</div>
+      </li>
+      <li>
+        <div class="check-box"></div>
+        <div><strong>Silence notifications, but keep Wi-Fi on.</strong> You need internet access for all three labs. The browser is your only tool today.</div>
+      </li>
+    </ul>
+
+    <div class="callout callout-tip">
+      <strong>💡 Pro-Tip: Privacy During Labs</strong>
+      You will be entering your own email address into haveibeenpwned.com. This is a trusted, legitimate service — but if you prefer, use a secondary or university email account rather than a personal one. The results will be the same either way. You can also use a colleague's email with their permission.
+    </div>
+
+    <div class="screenshot">
+      <span>📸</span>
+      [Insert Screenshot: A browser window showing all four tabs open side by side — this webbook, HIBP, CyberChef, and Google Admin Toolbox — with labels pointing to each tab to orient participants.]
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ═══════════════════════════════════════════
+       PAGE 2 — CHAPTER 1: THREAT LANDSCAPE
+  ══════════════════════════════════════════════ -->
+  <section id="ch1">
+    <div class="page-header">
+      <div class="page-badge">📖 Chapter 1 — Page 2 of 4</div>
+      <h2 class="page-title">The Academic Threat Landscape</h2>
+    </div>
+
+    <p>Before we touch any tools, we need to understand the <em>why</em>. Security measures that feel like bureaucratic inconveniences start making intuitive sense once you appreciate the threat environment you are operating in every single day.</p>
+
+    <h3 id="why-unis">Why Universities Are Prime Targets</h3>
+
+    <p>Universities represent a uniquely attractive proposition for attackers. Think about what sits on a typical university network: cutting-edge research that may be worth hundreds of millions of rupees in intellectual property, personally identifiable information (PII) for tens of thousands of students and staff, health records from campus medical facilities, financial data, payment systems, and government-funded grant data. For an attacker, a university is a department store of sensitive information — all under one digital roof.</p>
+
+    <p>But the value of the data alone does not explain why universities are attacked more frequently than, say, a comparable private enterprise. The structural factors are just as important:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Factor</th>
+          <th>The Academic Reality</th>
+          <th>Why Attackers Love It</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Open culture</strong></td>
+          <td>Academic freedom values open sharing, collaboration, and accessible networks</td>
+          <td>More entry points, less friction for lateral movement inside networks</td>
+        </tr>
+        <tr>
+          <td><strong>Diverse user base</strong></td>
+          <td>Students, faculty, admin staff, visiting researchers, contractors — all with different security awareness levels</td>
+          <td>The weakest link is easier to find and exploit</td>
+        </tr>
+        <tr>
+          <td><strong>Legacy infrastructure</strong></td>
+          <td>Universities operate century-old systems alongside bleeding-edge research tools</td>
+          <td>Unpatched, legacy systems are a hacker's favourite playground</td>
+        </tr>
+        <tr>
+          <td><strong>High-value IP</strong></td>
+          <td>Research in pharma, defence, AI, materials science — often government-funded</td>
+          <td>Nation-state actors specifically target research for espionage</td>
+        </tr>
+        <tr>
+          <td><strong>Budget constraints</strong></td>
+          <td>IT security teams are often under-resourced compared to private sector peers</td>
+          <td>Fewer defences per surface area of network to protect</td>
+        </tr>
+        <tr>
+          <td><strong>BYOD culture</strong></td>
+          <td>Students and faculty use personal devices on university networks</td>
+          <td>Unmanaged devices introduce unknown vulnerabilities constantly</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-warn">
+      <strong>⚠️ Real-World Context</strong>
+      In 2021, a cyberattack on the University of the Highlands and Islands (UHI) in Scotland forced the closure of all 13 campuses and their physical libraries simultaneously. In 2023, several Indian universities reported data breaches exposing student examination records and personal information. These are not isolated incidents — academic institutions globally reported a 75% increase in cyberattacks between 2020 and 2023.
+    </div>
+
+    <p>The threat is not only external. Research shows that a significant proportion of security incidents in academic institutions result from <strong>insider actions</strong> — not malicious insiders, but well-meaning faculty, students, and staff who click a phishing link, use a weak password, or inadvertently misconfigure a cloud storage bucket. This is why security awareness is not just an IT problem: <em>it is everyone's problem, and therefore everyone's opportunity to help.</em></p>
+
+    <!-- CIA TRIAD -->
+    <h3 id="cia">The CIA Triad — The Foundation of Everything</h3>
+
+    <p>Every framework, standard, and regulation in the entire field of information security traces its roots back to three core principles, collectively called the <strong>CIA Triad</strong>. Once you understand these three ideas, you have a mental model that unlocks almost all security conversations.</p>
+
+    <div class="triad-grid">
+      <div class="triad-card">
+        <div class="triad-icon">🔒</div>
+        <h4>Confidentiality</h4>
+        <p>Information should only be accessible to those who are authorised to see it. Keep secrets secret.</p>
+      </div>
+      <div class="triad-card">
+        <div class="triad-icon">✅</div>
+        <h4>Integrity</h4>
+        <p>Information should be accurate and unaltered. Data should only be changed by authorised people through authorised processes.</p>
+      </div>
+      <div class="triad-card">
+        <div class="triad-icon">🌐</div>
+        <h4>Availability</h4>
+        <p>Systems and information should be accessible when authorised users need them. Downtime is a security failure.</p>
+      </div>
+    </div>
+
+    <h4>The Grading System Analogy</h4>
+    <p>Abstract concepts land differently when they connect to something familiar. Consider your university's examination and grading system — you interact with it every semester:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>CIA Principle</th>
+          <th>Grading System Example</th>
+          <th>Breach Scenario</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>🔒 <strong>Confidentiality</strong></td>
+          <td>Only the student, their faculty, and the exam controller should see a student's grade.</td>
+          <td>A student's grade list leaks on a WhatsApp group before official results. Private information is now public.</td>
+        </tr>
+        <tr>
+          <td>✅ <strong>Integrity</strong></td>
+          <td>A grade of 78 should remain 78 — not altered by anyone after entry into the system.</td>
+          <td>A malicious actor hacks the Student Information System and changes a grade from 45 to 75. The data is now untrustworthy.</td>
+        </tr>
+        <tr>
+          <td>🌐 <strong>Availability</strong></td>
+          <td>The exam portal must be online and functional when students need to check results or register for courses.</td>
+          <td>A Distributed Denial of Service (DDoS) attack crashes the exam portal during the result declaration period. Authorised users cannot access what they are entitled to.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-info">
+      <strong>📌 Teaching Moment — The Triangle of Trade-Offs</strong>
+      Security professionals often have to consciously balance these three principles against each other. Maximising Confidentiality (encrypting everything) can sometimes reduce Availability (slowing systems down). Maximising Availability (making systems as accessible as possible) can sometimes weaken Confidentiality. Real-world security is always a negotiation between these three demands.
+    </div>
+
+    <!-- MFA & ZERO TRUST -->
+    <h3 id="mfa">Multi-Factor Authentication & Zero Trust</h3>
+
+    <p>Understanding the CIA Triad tells us <em>what</em> we are protecting. MFA and Zero Trust tell us <em>how</em> we protect it.</p>
+
+    <h4>Multi-Factor Authentication (MFA)</h4>
+
+    <p>Authentication is the process of proving you are who you say you are. Traditionally, a single password was considered sufficient. The problem: passwords can be stolen, guessed, or leaked in data breaches — often without the owner knowing. MFA solves this by requiring proof from two or more distinct <em>categories</em> of evidence:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Factor Category</th>
+          <th>What it Means</th>
+          <th>Common Examples</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>🧠 <strong>Something you Know</strong></td>
+          <td>A secret only you should know</td>
+          <td>Password, PIN, security question answer</td>
+        </tr>
+        <tr>
+          <td>📱 <strong>Something you Have</strong></td>
+          <td>A physical object or device in your possession</td>
+          <td>OTP via SMS, Google Authenticator app, hardware security key (YubiKey)</td>
+        </tr>
+        <tr>
+          <td>👁️ <strong>Something you Are</strong></td>
+          <td>A biometric characteristic unique to you</td>
+          <td>Fingerprint scan, facial recognition, iris scan</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Even if an attacker steals your password (the "something you know"), they still cannot log in without the second factor — typically your phone. This single control neutralises the most common attack vectors, including phishing, credential stuffing, and brute force attacks.</p>
+
+    <div class="callout callout-tip">
+      <strong>💡 Analogy: The ATM</strong>
+      You have been using MFA for decades without thinking about it. An ATM requires your debit card (something you have) AND your PIN (something you know). Even if someone knows your PIN, they cannot withdraw money without the physical card — and vice versa. Email accounts and university portals deserve the same level of protection as your bank account.
+    </div>
+
+    <h4>Zero Trust Architecture — "Never Trust, Always Verify"</h4>
+
+    <p>Traditional network security assumed that everything inside the network perimeter was trustworthy. Once you were on the university Wi-Fi, the assumption was that you were legitimate. Zero Trust discards this assumption entirely. Its core principle: <strong>no user, device, or system should be trusted by default — regardless of where they are or how they got in.</strong></p>
+
+    <p>Every request for access is verified every time. Access is granted only to the minimum resources needed for a specific task (the principle of "least privilege"). Behaviour is continuously monitored for anomalies.</p>
+
+    <p>In an academic context: even if a faculty member is connected to the campus LAN and has a valid username and password, a Zero Trust system might also check whether their device is up-to-date, whether the login time and location are normal, and whether the resources they're trying to access are consistent with their usual patterns.</p>
+
+    <!-- HUMAN FIREWALL -->
+    <h3 id="human-fw">The Human Firewall — Your Most Important Security Control</h3>
+
+    <p>A firewall is a security system that monitors and controls incoming and outgoing network traffic based on rules. Technical firewalls are essential — but they cannot stop an attack that a human unwittingly invites in.</p>
+
+    <p>When a faculty member clicks a phishing link, downloads a malicious attachment, or shares their password over email, the most sophisticated technical defences become irrelevant. <strong>Verizon's Data Breach Investigations Report consistently finds that 74–82% of all data breaches involve a human element.</strong> Humans are simultaneously the greatest vulnerability and the most potent defence in any security system.</p>
+
+    <p>The concept of the "Human Firewall" refers to a workforce that is security-aware, sceptical of unsolicited communications, and empowered to recognise and report threats. You — as a faculty member who has just attended this FDP — are becoming part of your institution's human firewall right now.</p>
+
+    <div class="callout callout-warn">
+      <strong>⚠️ Social Engineering is the Preferred Attack Vector</strong>
+      Attackers find it far easier and cheaper to manipulate a human than to break through a technical control. Phishing emails, pretexting phone calls, and baiting USB drives are all examples of social engineering — exploiting human psychology (trust, urgency, fear, helpfulness) rather than technical weaknesses. Understanding this is your first and most powerful line of defence.
+    </div>
+
+    <div class="screenshot">
+      <span>📸</span>
+      [Insert Screenshot: A simple diagram showing the "Human Firewall" concept — a layered shield with Technical Controls (firewalls, antivirus, MFA) on the outer layer and a glowing "Human" layer in the centre, with arrows showing threats being blocked at multiple layers.]
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ═══════════════════════════════════════════
+       PAGE 3 — CHAPTER 2: LABS
+  ══════════════════════════════════════════════ -->
+  <section id="ch2">
+    <div class="page-header">
+      <div class="page-badge">🛠️ Chapter 2 — Page 3 of 4</div>
+      <h2 class="page-title">The Defender's Web Toolkit — Hands-On Labs</h2>
+    </div>
+
+    <p>Theory without practice is quickly forgotten. In this chapter, you will use three free, browser-based tools that are genuinely used by security professionals every day. No accounts to create. No software to install. Just open a tab and follow along.</p>
+
+    <div class="callout callout-info">
+      <strong>📌 Lab Environment Note</strong>
+      All three labs run entirely in your browser and use publicly available services. The data you enter (your email address, text strings, email headers) does not get saved or associated with your identity in any meaningful way. See each lab's privacy note for specifics.
+    </div>
+
+    <!-- ═══ LAB 1 ═══ -->
+    <div id="lab1">
+      <div class="lab-header">
+        <div class="lab-icon">🔍</div>
+        <div class="lab-meta">
+          <h3>Lab 1: The Credential Check</h3>
+          <p>Tool: <code>haveibeenpwned.com</code> &nbsp;·&nbsp; Estimated Time: 10 minutes</p>
+        </div>
+        <div class="lab-badge">✦ Live Demo</div>
+      </div>
+
+      <h4>What is a Data Breach?</h4>
+      <p>A <strong>data breach</strong> occurs when an attacker gains unauthorised access to a system and extracts sensitive data — typically usernames and passwords. These stolen credential databases are then traded, sold, or published on the dark web.</p>
+
+      <p>Here is the critical, often-overlooked detail: <strong>the breach of Platform A means your other accounts are also at risk.</strong> Why? Because most people reuse passwords. If your email and password for an online shopping site are stolen, and you use the same email and password for your university account, an attacker can log straight into your university systems — even though the university was never breached. This attack is called <strong>credential stuffing</strong>, and it is one of the most common account takeover methods used today.</p>
+
+      <h4>About haveibeenpwned.com (HIBP)</h4>
+      <p>HIBP was created by Troy Hunt, a globally recognised security researcher. It is now a trusted public resource, officially partnered with the FBI and UK National Crime Agency. The site holds a database of over <strong>13 billion compromised accounts</strong> from thousands of data breaches. It allows you to search for your email address and see whether it appears in any known breach — without exposing your data further.</p>
+
+      <div class="callout callout-tip">
+        <strong>💡 Privacy Note</strong>
+        Entering your email address into HIBP does not expose it in any new way. The service uses a technique called "k-anonymity" to check passwords without sending your actual password to their server. Your email address is searched against their database and results are shown to you — that's it. Troy Hunt's methodology and the site's privacy policy are publicly documented.
+      </div>
+
+      <div class="screenshot">
+        <span>📸</span>
+        [Insert Screenshot: The haveibeenpwned.com homepage showing the large search bar in the centre with the text "Email address or phone number" and the "pwned?" button. The site's clean, dark interface should be visible.]
+      </div>
+
+      <h4>Step-by-Step: Checking Your Credentials</h4>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <p>Navigate to <code>haveibeenpwned.com</code> in your browser. You should see a large search bar centred on the page. This is the entire interface — no login required, no account creation.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <p>Type your primary email address into the search bar. This should be the email address you use most often for online registrations — likely the one associated with your university account, a Google account, or LinkedIn.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <p>Click the <strong>"pwned?"</strong> button (or press Enter). The page will display one of two results — we'll interpret both below.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <p>Read through the breach listing carefully. For each breach listed, note: the name of the breached service, the date it occurred, and — critically — <strong>what data was compromised</strong> (passwords, phone numbers, physical addresses, etc.).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <p><strong>Optional but recommended:</strong> Search any other email addresses you use regularly — personal Gmail, old college email, business email. Each one may have a different breach history.</p>
+          </div>
+        </div>
+      </div>
+
+      <h4>Interpreting Your Results</h4>
+
+      <div class="callout callout-tip">
+        <strong>✅ Green Screen — "Good news — no pwnage found!"</strong>
+        Your email address was not found in any breach in the HIBP database. This is excellent news! However, it does not mean your data has never been breached — only that it hasn't appeared in the breaches known to HIBP. Maintain good password hygiene regardless.
+      </div>
+
+      <div class="callout callout-danger">
+        <strong>🚨 Red Screen — "Oh no — pwned!"</strong>
+        Your email address appears in one or more known data breaches. <em>Do not panic.</em> This is more common than most people expect — over 50% of participants in this type of exercise discover their email in at least one breach. What matters now is what you do next.
+      </div>
+
+      <h4>If You've Been Pwned — Immediate Action Plan</h4>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <p><strong>Identify which services were breached.</strong> Read each breach listing. HIBP tells you exactly which platform was compromised and when. Focus first on breaches that exposed <em>passwords</em> — look for "Passwords" in the "Compromised data" field.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <p><strong>Change your password on each breached service immediately.</strong> Log in to each service listed and change your password. If you can no longer access the account, use the "Forgot Password" flow. If the service no longer exists, skip it — just note which password it used.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <p><strong>Audit password reuse.</strong> Ask yourself: did I use the same password from that breached service anywhere else? If yes — your university portal, your email, your banking — change those passwords too, right now. This is the most urgent step.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <p><strong>Enable MFA on your most critical accounts.</strong> After changing passwords, enable MFA on your email account and your university account at minimum. These are the keys to your digital kingdom — treat them accordingly.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <p><strong>Consider a password manager.</strong> The root cause of credential stuffing attacks is password reuse, which itself is caused by the impossibility of remembering dozens of unique, complex passwords. A password manager (Bitwarden is free and open-source; 1Password is excellent for institutions) solves this problem completely. Ask your IT department about institutional licensing.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="screenshot">
+        <span>📸</span>
+        [Insert Screenshot: The HIBP results page showing a "Oh no — pwned!" red result, with the list of breach names, dates, and a highlighted "Compromised data" field showing "Email addresses, Passwords, Usernames". Annotate with arrows pointing to the key information fields.]
+      </div>
+
+      <div class="callout callout-info">
+        <strong>📌 HIBP's Passwords Tool</strong>
+        HIBP also has a separate tool at <code>haveibeenpwned.com/Passwords</code> where you can check whether a specific password appears in any known breach database — without revealing the full password to the service (using k-anonymity). This is useful for checking if your current password is "commonly known" to attackers.
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ═══ LAB 2 ═══ -->
+    <div id="lab2">
+      <div class="lab-header">
+        <div class="lab-icon">⚙️</div>
+        <div class="lab-meta">
+          <h3>Lab 2: The Cyber Swiss Army Knife</h3>
+          <p>Tool: <code>gchq.github.io/CyberChef</code> &nbsp;·&nbsp; Estimated Time: 25 minutes</p>
+        </div>
+        <div class="lab-badge">✦ Interactive</div>
+      </div>
+
+      <h4>What is CyberChef?</h4>
+      <p>CyberChef is a web application created and open-sourced by GCHQ (the UK's Government Communications Headquarters — their equivalent of the NSA). It describes itself as "a simple, intuitive web app for carrying out all manner of 'cyber' operations within a web browser." In practice, it is an extraordinarily powerful tool for transforming, encoding, encrypting, decoding, and analysing data — all in real time, in your browser, without any data leaving your machine.</p>
+
+      <p>Before we use it, we need to understand the difference between three terms that are used interchangeably in everyday conversation but mean very different things in security.</p>
+
+      <h4>Encoding vs. Encryption vs. Hashing — The Critical Distinction</h4>
+
+      <div class="crypto-grid">
+        <div class="crypto-card">
+          <h4 style="color: var(--accent);">Encoding</h4>
+          <p>Transforms data into a different format for <em>compatibility</em> purposes — not security. Anyone who knows the encoding scheme can instantly reverse it.</p>
+          <p><strong>Like:</strong> Translating English to Morse code. Anyone with the codebook can decode it instantly.</p>
+          <span class="crypto-pill pill-rev">Reversible — No Key</span>
+        </div>
+        <div class="crypto-card">
+          <h4 style="color: var(--warn);">Encryption</h4>
+          <p>Transforms data into an unreadable form to <em>protect confidentiality</em>. Only someone with the correct key can reverse it. Without the key, the data is computationally infeasible to read.</p>
+          <p><strong>Like:</strong> A locked safe. You need the right key (or combination) to open it.</p>
+          <span class="crypto-pill pill-key">Reversible — Key Required</span>
+        </div>
+        <div class="crypto-card">
+          <h4 style="color: var(--danger);">Hashing</h4>
+          <p>Creates a unique, fixed-length "fingerprint" of data. It is a <em>one-way function</em> — you cannot reverse a hash to get the original data. Used to verify integrity, not protect secrecy.</p>
+          <p><strong>Like:</strong> A fingerprint. You can verify it matches, but you cannot reconstruct the person from the fingerprint.</p>
+          <span class="crypto-pill pill-one">One-Way — No Reversal</span>
+        </div>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>⚠️ The Common Misconception That Gets People Hacked</strong>
+        Many people — and some poorly-designed systems — confuse encoding with encryption. Base64 encoding (used to attach files in emails, embed images in web pages) is <strong>not encryption</strong>. If someone sends you "confidential" data encoded in Base64 thinking it is protected, it is not. Any person with access to a browser can decode it in seconds. Security depends on encryption with a secret key, not on obscuring data in a different format.
+      </div>
+
+      <div class="screenshot">
+        <span>📸</span>
+        [Insert Screenshot: The CyberChef interface showing its three-panel layout — the "Input" box on the right, the "Output" box below it, and the "Operations" panel on the left where recipes can be searched and dragged. Annotate each panel clearly.]
+      </div>
+
+      <h4>Navigating CyberChef</h4>
+      <p>CyberChef uses a "recipe" metaphor. You put your <strong>Input</strong> data in the input box (top right), add one or more <strong>Operations</strong> from the left panel (search or browse by category), and the <strong>Output</strong> appears automatically in the output box (bottom right). You can chain multiple operations together, like steps in a recipe.</p>
+
+      <!-- Exercise 2A -->
+      <h4>Exercise 2A — Encoding: Base64</h4>
+      <p><strong>Scenario:</strong> You receive a suspicious email claiming to be from your IT department. Embedded in the email is a block of text that starts with <code>SGVsbG8gV29ybGQ=</code>. Is this encrypted? Let's find out.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <p>Go to your CyberChef tab: <code>gchq.github.io/CyberChef</code></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <p>In the <strong>Input</strong> box (top right), type or paste this text exactly:<br>
+            <code>SGVsbG8gV29ybGQ=</code></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <p>In the <strong>Operations</strong> search bar (top left), type <code>From Base64</code>. You will see an operation called "From Base64" appear in the results.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <p>Drag the "From Base64" operation into the <strong>Recipe</strong> area (the middle column). The output will update automatically.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <p><strong>Observe the Output.</strong> You should see: <code>Hello World</code>. That is all that was hidden — a completely trivial message. This demonstrates that Base64 provides zero security. It only encodes for compatibility, not confidentiality.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-tip">
+        <strong>💡 Now try encoding something yourself</strong>
+        Clear the recipe and Input. Search for <code>To Base64</code> and drag it in. Type your name in the Input box. Notice how the output changes character by character as you type — this is encoding in real-time. There is no key, no secret. Anyone can reverse it instantly.
+      </div>
+
+      <!-- Exercise 2B -->
+      <h4>Exercise 2B — Encryption: AES</h4>
+      <p><strong>Scenario:</strong> You need to share sensitive student grade data with a colleague via email. You want to ensure that even if the email is intercepted, the data cannot be read. This requires real encryption.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <p>Clear the CyberChef recipe and Input. In the Operations search bar, type <code>AES Encrypt</code> and drag the "AES Encrypt" operation into the Recipe area.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <p>In the AES Encrypt operation settings that appear, you will see fields for <strong>Key</strong> and <strong>IV</strong> (Initialisation Vector). For this exercise, set the Key to:<br><code>MySecretKey12345</code><br>Change the Key format to "UTF8". Set Mode to "CBC".</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <p>In the Input box, type a message that represents sensitive data:<br><code>Student: Priya Sharma, Roll No: 2023CS042, Final Grade: 87</code></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <p>Observe the Output. You will see a string of seemingly random characters — this is the ciphertext. It is computationally infeasible to read without the key <code>MySecretKey12345</code>.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <p><strong>Now try to decrypt it:</strong> Replace the "AES Encrypt" operation with "AES Decrypt" (search for it). Use the same key. Paste the ciphertext as input. You should get your original message back. Change even one character of the key — and the decryption fails completely.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="screenshot">
+        <span>📸</span>
+        [Insert Screenshot: CyberChef showing the AES Encrypt operation with the Key field filled in, the Input containing the student data string, and the Output showing a jumbled ciphertext string. Annotate with arrows showing "Original Data → Encryption with Key → Unreadable Ciphertext".]
+      </div>
+
+      <!-- Exercise 2C -->
+      <h4>Exercise 2C — Hashing: MD5 and SHA-256</h4>
+      <p><strong>Scenario:</strong> You download a research dataset from a journal repository. The website lists its MD5 and SHA-256 "checksums." What are these, and why do they matter?</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <p>Clear the recipe. Search for <code>MD5</code> and drag the "MD5" operation into the Recipe. In the Input box, type:<br><code>The exam is on Tuesday at 10am</code></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <p>Note the MD5 hash in the Output. It will be a 32-character hexadecimal string — something like <code>7a8f3c...</code>. This is the "fingerprint" of your exact input.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <p><strong>The Avalanche Effect:</strong> Now change a single character in the Input — change "Tuesday" to "tuesday" (lowercase t). Observe the Output. The hash changes <em>completely</em>. This is the avalanche effect: even a tiny change in input produces a completely different hash output.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <p>Now try SHA-256: Replace the MD5 operation with a "SHA2-256" operation. Use the same input. Notice the hash is now 64 characters long — a stronger fingerprint. This is what most modern systems use for password storage and file verification.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <p><strong>Why does this matter?</strong> When you download a file, its legitimate distributor publishes its SHA-256 hash. After downloading, you hash the file and compare. If the hashes match exactly, the file was not tampered with in transit. If they differ by even one bit, the file has been modified — potentially by a malicious actor inserting malware.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-info">
+        <strong>📌 How Websites Store Your Password — A Peek Behind the Curtain</strong>
+        When you create an account on a website, a well-designed system does not store your password. Instead, it hashes it (typically with SHA-256 or bcrypt) and stores the hash. When you log in later, it hashes your input and compares hashes. Even if the database is stolen, attackers see only hash strings — not your actual password. This is also why websites say "We cannot recover your password" — they don't have it. Only the hash exists.
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>⚠️ MD5 is Broken — Use SHA-256 or Better</strong>
+        MD5 is still widely used for non-security purposes (checksums, data deduplication), but it is cryptographically broken and should <strong>never</strong> be used to store passwords or for any security-critical hashing. SHA-256 (part of the SHA-2 family) is the current standard. If you ever see a system using MD5 for password storage, flag it to your IT security team immediately.
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ═══ LAB 3 ═══ -->
+    <div id="lab3">
+      <div class="lab-header">
+        <div class="lab-icon">📧</div>
+        <div class="lab-meta">
+          <h3>Lab 3: X-Raying Phishing Emails</h3>
+          <p>Tool: Google Admin Toolbox Message Header Analyser &nbsp;·&nbsp; Estimated Time: 20 minutes</p>
+        </div>
+        <div class="lab-badge">✦ Real Email</div>
+      </div>
+
+      <h4>Understanding the Invisible Layer — Email Headers</h4>
+      <p>Every email you have ever sent or received carries an invisible layer of metadata called <strong>headers</strong>. These headers document the complete journey of the email from sender to recipient — every mail server it passed through, timestamps at each hop, authentication results, and the technical identity of the original sender.</p>
+
+      <p>The email client you use (Gmail, Outlook, your university webmail) deliberately hides this information to keep the interface clean. But attackers rely on this invisibility when constructing phishing emails. By revealing and reading the headers, you can expose the true origin of any email — even if the "From" field has been spoofed to display a trusted name.</p>
+
+      <h4>The Anatomy of an Email Header</h4>
+      <p>Headers are read <strong>bottom-up</strong> — the bottom-most <code>Received:</code> line is where the email entered the network (closest to the original sender), and the top-most is the last server it passed through before reaching you. Attackers cannot forge the top Received headers, because those are added by servers you trust — your own mail provider. But they can forge everything else, including the <code>From:</code> field.</p>
+
+      <table>
+        <thead>
+          <tr><th>Header Field</th><th>What It Tells You</th><th>Can It Be Faked?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>From:</code></td><td>The sender's display name and address</td><td>✅ Yes — easily spoofed</td></tr>
+          <tr><td><code>Reply-To:</code></td><td>Where replies will go (often different from From in phishing)</td><td>✅ Yes</td></tr>
+          <tr><td><code>Received:</code></td><td>Each mail server the email passed through (chain of custody)</td><td>⚠️ Lower entries can be faked; top entry cannot</td></tr>
+          <tr><td><code>Return-Path:</code></td><td>Where delivery failure notices go — often reveals true sender domain</td><td>⚠️ Often inconsistent in phishing</td></tr>
+          <tr><td><code>SPF</code> / <code>DKIM</code> / <code>DMARC</code></td><td>Authentication results — did the email actually come from the claimed domain?</td><td>❌ No — these are verified by your mail server</td></tr>
+          <tr><td><code>Message-ID:</code></td><td>Unique identifier for the email — the domain after the @ should match the From domain</td><td>⚠️ Often inconsistent in phishing</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Step 1 — Extract Raw Headers from Your Email Client</h4>
+
+      <div class="callout callout-info">
+        <strong>📌 The process differs slightly by client. Find yours below:</strong>
+      </div>
+
+      <h4>Gmail</h4>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <p>Open the email you want to inspect in Gmail (in your browser, not the app).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <p>Click the <strong>three-dot menu</strong> (⋮) in the top-right corner of the email message.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <p>Select <strong>"Show original"</strong> from the dropdown menu. A new tab opens showing the raw message.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <p>Click the <strong>"Copy to clipboard"</strong> button at the top of the raw message page. Alternatively, select all the text (Ctrl+A / Cmd+A) and copy it.</p>
+          </div>
+        </div>
+      </div>
+
+      <h4>Microsoft Outlook (Web — outlook.office.com)</h4>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <p>Open the email. Click the <strong>three-dot menu</strong> (⋯) at the top of the reading pane.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <p>Select <strong>"View" → "View message source"</strong> (the exact label varies slightly by version).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <p>A dialog box will appear with the raw message headers. Select all and copy.</p>
+          </div>
+        </div>
+      </div>
+
+      <h4>University Webmail / Roundcube / Zimbra</h4>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <p>Open the email. Look for a <strong>"More"</strong>, <strong>"Options"</strong>, or <strong>"Action"</strong> menu — this varies by client.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <p>Look for options labelled <strong>"View Source"</strong>, <strong>"Show Raw"</strong>, <strong>"All Headers"</strong>, or <strong>"Technical Details"</strong>. If uncertain, ask the session facilitator for assistance.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="screenshot">
+        <span>📸</span>
+        [Insert Screenshot: Gmail's "Show original" option visible in the three-dot dropdown menu, with the email open in the background. The raw message view should show the maze of header text, clearly showing Received: headers, From:, and authentication results like "spf=pass" and "dkim=pass".]
+      </div>
+
+      <h4>Step 2 — Analyse the Headers with Google Admin Toolbox</h4>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <p>Switch to your Google Admin Toolbox tab: <code>toolbox.googleapps.com/apps/messageheader</code></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <p>Paste the raw email headers into the large text area on the page.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <p>Click the <strong>"Analyse the header above"</strong> button. The tool will parse the headers and present them in a readable, visual format.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <p>Read the results. You will see a visual chain of each hop the email made, with timestamps showing how long it spent at each server. Look for anomalies: unusual servers, unexpected geographic locations, or significant time delays.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="screenshot">
+        <span>📸</span>
+        [Insert Screenshot: The Google Admin Toolbox showing a parsed email header result, with the "Received:" chain displayed as a visual hop-by-hop journey. Annotate the sending IP, the server names, and the SPF/DKIM authentication status fields. Use red circles to highlight a suspicious hop from an unexpected IP address.]
+      </div>
+
+      <h4>Spotting a Spoofed Email — What to Look For</h4>
+
+      <div class="callout callout-danger">
+        <strong>🚨 Red Flag 1: Mismatched Domains</strong>
+        The <code>From:</code> header says <code>registrar@university.ac.in</code>, but the <code>Return-Path:</code> or the lowest <code>Received:</code> header shows a completely different domain — e.g., <code>mail.suspiciousdomain.xyz</code>. The sender is pretending to be your university but the email actually originated elsewhere.
+      </div>
+
+      <div class="callout callout-danger">
+        <strong>🚨 Red Flag 2: SPF / DKIM Failures</strong>
+        In the authentication results section of the headers (or as shown by the Toolbox), look for lines like <code>spf=fail</code> or <code>dkim=fail</code>. These mean the email failed the digital authentication checks your mail server performed. A legitimate email from university.ac.in will show <code>spf=pass dkim=pass dmarc=pass</code>.
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>⚠️ Red Flag 3: Unusual Routing Paths</strong>
+        A legitimate internal university email should have a simple, short Received chain — maybe two or three hops between the sender's mail server and yours. A phishing email is sometimes routed through multiple obscure servers in different countries to obscure its origin. More than four to five hops for a routine email warrants scrutiny.
+      </div>
+
+      <div class="callout callout-tip">
+        <strong>💡 Alternative Tool: MXToolbox Email Header Analyser</strong>
+        If the Google Admin Toolbox is unavailable, navigate to <code>mxtoolbox.com/EmailHeaders.aspx</code> and paste your headers there. It provides a similar visual breakdown with colour-coded alerts for suspicious findings.
+      </div>
+
+      <h4>Quick Reference — Phishing Email Checklist</h4>
+      <ul class="checklist">
+        <li><div class="check-box"></div><div>Hover over all links <em>before</em> clicking. Check the URL in the status bar — does it match the legitimate domain?</div></li>
+        <li><div class="check-box"></div><div>Check the sender's actual email address, not just the display name. The name can say "University IT Helpdesk" while the address is <code>helpdesk@random-domain.com</code>.</div></li>
+        <li><div class="check-box"></div><div>Look for urgency language: "Your account will be deleted in 24 hours," "Immediate action required." Legitimate institutions rarely communicate this way.</div></li>
+        <li><div class="check-box"></div><div>Watch for generic greetings: "Dear User," "Dear Faculty Member" instead of your actual name.</div></li>
+        <li><div class="check-box"></div><div>Examine email header Return-Path domain. Does it match the From domain?</div></li>
+        <li><div class="check-box"></div><div>Check SPF, DKIM, and DMARC results in headers. Any failure is a serious warning sign.</div></li>
+        <li><div class="check-box"></div><div>When in doubt — do not click. Forward to <code>security@yourinstitution.ac.in</code> or your IT helpdesk for verification.</div></li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ═══════════════════════════════════════════
+       PAGE 4 — CHAPTER 3: CLASSROOM INTEGRATION
+  ══════════════════════════════════════════════ -->
+  <section id="ch3">
+    <div class="page-header">
+      <div class="page-badge">🧠 Chapter 3 — Page 4 of 4</div>
+      <h2 class="page-title">Bringing It to the Classroom</h2>
+    </div>
+
+    <p>The most effective security awareness happens when concepts are not siloed in a one-time IT presentation, but woven into the fabric of what students already care about. You — as a faculty member — are uniquely positioned to contextualise information security within your discipline in ways no IT department can replicate.</p>
+
+    <div class="callout callout-info">
+      <strong>📌 Why This Matters for Your Students</strong>
+      Your students will graduate into a world where data literacy and security awareness are professional baseline expectations — regardless of their field. A business student who understands data breach liability, a law student who knows digital evidence chain of custody, a healthcare student aware of patient data confidentiality — these students are more employable, more responsible, and more resilient professionals.
+    </div>
+
+    <h3 id="syllabi">Cross-Discipline Integration Ideas</h3>
+    <p>You do not need to redesign your course. A single well-placed case study, a 15-minute lab exercise, or a reflective assignment can plant the seed. Here are specific, immediately applicable ideas by discipline:</p>
+
+    <h4>Business & Management</h4>
+    <table>
+      <thead>
+        <tr><th>Topic</th><th>Security Integration</th><th>Suggested Activity</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Corporate Governance</td>
+          <td>Data breach liability, GDPR/DPDP Act compliance, board-level security responsibility</td>
+          <td>Case study analysis: Sony Pictures hack (2014) or the Air India breach (2021) — board decisions and financial consequences.</td>
+        </tr>
+        <tr>
+          <td>Marketing & Consumer Behaviour</td>
+          <td>How companies collect and monetise user data; dark patterns; informed consent</td>
+          <td>Students audit a company's privacy policy and present their findings: What data is collected? Who is it shared with? Is the consent genuine?</td>
+        </tr>
+        <tr>
+          <td>Supply Chain Management</td>
+          <td>Third-party vendor risk; supply chain attacks (e.g., SolarWinds)</td>
+          <td>Map a supply chain and identify at which vendor a data leak would propagate furthest. Discuss mitigation strategies.</td>
+        </tr>
+        <tr>
+          <td>Entrepreneurship</td>
+          <td>Security-by-design for startups; cost of a breach vs. cost of prevention</td>
+          <td>Students add a "Security & Privacy" section to their business plan — what data do they collect, how do they protect it, what's their breach response plan?</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Law & Legal Studies</h4>
+    <table>
+      <thead>
+        <tr><th>Topic</th><th>Security Integration</th><th>Suggested Activity</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Evidence & Procedure</td>
+          <td>Digital evidence admissibility; chain of custody for electronic records; hashing for document integrity (the SHA-256 you just learned!)</td>
+          <td>Students discuss: How does a hash value prove a digital document has not been altered since evidence collection? What happens if the hash changes?</td>
+        </tr>
+        <tr>
+          <td>Privacy Law</td>
+          <td>India's Digital Personal Data Protection Act 2023, GDPR comparison, data principal rights</td>
+          <td>Mock scenario: A university suffers a student data breach. Students draft the breach notification letter that must be sent to affected individuals under the DPDP Act.</td>
+        </tr>
+        <tr>
+          <td>Cyberlaw / IT Act</td>
+          <td>Sections 43, 66, 66C of the IT Act 2000; cybercrime classifications; jurisdiction</td>
+          <td>Case study moot court: Prosecute or defend an accused in a credential stuffing case.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Healthcare & Life Sciences</h4>
+    <table>
+      <thead>
+        <tr><th>Topic</th><th>Security Integration</th><th>Suggested Activity</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Medical Ethics</td>
+          <td>Patient data confidentiality (the "C" in CIA Triad); consent for data sharing in research; de-identification of health data</td>
+          <td>Discuss: A hospital's Electronic Health Record system is hit by ransomware (Availability attack). Doctors cannot access patient records. What ethical decisions must be made in the next 60 minutes?</td>
+        </tr>
+        <tr>
+          <td>Public Health / Epidemiology</td>
+          <td>Data integrity in surveillance systems; consequences of manipulated outbreak data</td>
+          <td>Thought experiment: If a bad actor corrupts the Integrity of a disease surveillance database, altering case counts, what downstream decisions are affected? Who is harmed?</td>
+        </tr>
+        <tr>
+          <td>Clinical Research</td>
+          <td>IRB data security requirements; encrypted data sharing between research sites; audit trails</td>
+          <td>Students review an IRB consent form and identify all security and privacy commitments made to participants. Are they realistic? Are they enforceable?</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Humanities, Social Sciences & Education</h4>
+    <table>
+      <thead>
+        <tr><th>Topic</th><th>Security Integration</th><th>Suggested Activity</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Media Studies / Journalism</td>
+          <td>Source protection; operational security for investigative reporters; verifying digital evidence</td>
+          <td>Students learn to verify an image's metadata (EXIF data) to check for manipulation — a real skill for digital journalists.</td>
+        </tr>
+        <tr>
+          <td>Sociology / Political Science</td>
+          <td>Surveillance capitalism; digital authoritarianism; data and power asymmetries</td>
+          <td>Essay: How does differential access to encryption tools create power imbalances between individuals, corporations, and states?</td>
+        </tr>
+        <tr>
+          <td>Education / Pedagogy</td>
+          <td>Student data privacy in EdTech tools; FERPA/institutional data policies; safe digital learning environments</td>
+          <td>Before adopting any new EdTech tool, students apply a simple checklist: What data does it collect? Where is it stored? Who can access it? Can it be deleted?</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip">
+      <strong>💡 The 15-Minute Rule</strong>
+      You do not need a full module on security. Research on learning transfer shows that a single, well-contextualised 15-minute activity connected to your course content is more effective than a two-hour standalone security lecture. Look at your existing syllabus — where does a case study, a data scenario, or an ethical question fit naturally?
+    </div>
+
+    <!-- ACTION PLAN -->
+    <h3 id="action-plan">Your 3-Step Personal Security Action Plan</h3>
+    <p>Theory and classroom ideas matter — but so does your own security posture. Here are three concrete actions you can take in the next 48 hours. Each takes less than 30 minutes.</p>
+
+    <div class="action-steps">
+      <div class="action-card">
+        <div class="action-num">01</div>
+        <h4>Secure Your Accounts</h4>
+        <p>Enable MFA on your university email, personal email, and any accounts that handle student or research data. Use an authenticator app (Google Authenticator, Microsoft Authenticator, or Authy) rather than SMS where possible. Change any password that appeared in the HIBP check today — use unique passwords for every account.</p>
+      </div>
+      <div class="action-card">
+        <div class="action-num">02</div>
+        <h4>Adopt a Password Manager</h4>
+        <p>The most friction-free way to have unique, strong passwords everywhere is a password manager. Start with <strong>Bitwarden</strong> — it is free, open-source, and has been independently audited. Import your existing passwords, then let it generate new unique ones as you change compromised passwords. Your institution may offer 1Password or LastPass — check with IT.</p>
+      </div>
+      <div class="action-card">
+        <div class="action-num">03</div>
+        <h4>Teach One Colleague</h4>
+        <p>The human firewall grows one person at a time. Share this webbook link with one colleague who was not at today's FDP. Walk them through the HIBP check together — five minutes of your time could protect critical institutional data. Consider advocating with your department head for this FDP to be an annual event.</p>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <strong>📌 Institutional Reporting: Close the Loop</strong>
+      If you receive a suspicious email, identify a potential phishing attempt, or discover a possible security incident: <strong>report it to your IT Security team immediately.</strong> Do not delete it — forward it with headers intact. Your report could protect hundreds of colleagues who received the same email but haven't noticed yet. You are now part of the human firewall — that responsibility is as important as the technical skills.
+    </div>
+
+    <!-- RESOURCES -->
+    <h3 id="resources">Further Learning & Resources</h3>
+    <p>Your journey does not end today. Here are carefully selected, freely accessible resources — all reputable, all browser-accessible:</p>
+
+    <h4>Immediate Tools (Bookmarks for your browser)</h4>
+    <div class="resource-grid">
+      <a class="resource-link" href="https://haveibeenpwned.com" target="_blank">
+        <span class="rl-icon">🔍</span>
+        <div>
+          <div>Have I Been Pwned</div>
+          <div class="rl-sub">haveibeenpwned.com — Credential breach checker</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://gchq.github.io/CyberChef" target="_blank">
+        <span class="rl-icon">⚙️</span>
+        <div>
+          <div>CyberChef</div>
+          <div class="rl-sub">gchq.github.io/CyberChef — Encoding, encryption, hashing</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://toolbox.googleapps.com/apps/messageheader" target="_blank">
+        <span class="rl-icon">📧</span>
+        <div>
+          <div>Google Admin Toolbox</div>
+          <div class="rl-sub">Email header analyser — Phishing investigation</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://mxtoolbox.com/EmailHeaders.aspx" target="_blank">
+        <span class="rl-icon">🔎</span>
+        <div>
+          <div>MXToolbox Header Analyser</div>
+          <div class="rl-sub">mxtoolbox.com — Alternative header analyser</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://www.virustotal.com" target="_blank">
+        <span class="rl-icon">🦠</span>
+        <div>
+          <div>VirusTotal</div>
+          <div class="rl-sub">virustotal.com — Scan files, URLs, hashes for malware</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://bitwarden.com" target="_blank">
+        <span class="rl-icon">🔑</span>
+        <div>
+          <div>Bitwarden</div>
+          <div class="rl-sub">bitwarden.com — Free, open-source password manager</div>
+        </div>
+      </a>
+    </div>
+
+    <h4>Free Certifications & Courses</h4>
+    <div class="resource-grid">
+      <a class="resource-link" href="https://www.cybrary.it" target="_blank">
+        <span class="rl-icon">🎓</span>
+        <div>
+          <div>Cybrary</div>
+          <div class="rl-sub">Free foundational cybersecurity courses</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://www.coursera.org/specializations/google-cybersecurity" target="_blank">
+        <span class="rl-icon">🏆</span>
+        <div>
+          <div>Google Cybersecurity Certificate</div>
+          <div class="rl-sub">Coursera — Financial aid available</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://tryhackme.com" target="_blank">
+        <span class="rl-icon">🧩</span>
+        <div>
+          <div>TryHackMe</div>
+          <div class="rl-sub">Gamified, guided security learning — browser-based labs</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://www.sans.org/cyberaces" target="_blank">
+        <span class="rl-icon">📘</span>
+        <div>
+          <div>SANS Cyber Aces</div>
+          <div class="rl-sub">Free foundational OS, networking, and security courses</div>
+        </div>
+      </a>
+    </div>
+
+    <h4>Policy & Regulatory Frameworks (India-Specific)</h4>
+    <div class="resource-grid">
+      <a class="resource-link" href="https://www.cert-in.org.in" target="_blank">
+        <span class="rl-icon">🇮🇳</span>
+        <div>
+          <div>CERT-In</div>
+          <div class="rl-sub">India's official cybersecurity incident response team</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://meity.gov.in/content/digital-personal-data-protection-act-2023" target="_blank">
+        <span class="rl-icon">📜</span>
+        <div>
+          <div>DPDP Act 2023</div>
+          <div class="rl-sub">Digital Personal Data Protection Act — MeitY</div>
+        </div>
+      </a>
+    </div>
+
+    <h4>Recommended Reading for Faculty</h4>
+    <table>
+      <thead>
+        <tr><th>Title</th><th>Author</th><th>Why It's Relevant</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><em>The Art of Invisibility</em></td>
+          <td>Kevin Mitnick</td>
+          <td>Practical privacy and security from the world's most famous hacker. Accessible for any audience.</td>
+        </tr>
+        <tr>
+          <td><em>Countdown to Zero Day</em></td>
+          <td>Kim Zetter</td>
+          <td>The Stuxnet story — the first known state-sponsored cyberweapon. Reads like a thriller. Perfect context for geopolitical security discussions.</td>
+        </tr>
+        <tr>
+          <td><em>Sandworm</em></td>
+          <td>Andy Greenberg</td>
+          <td>The most destructive cyberattack in history and the hackers behind it. Essential reading for understanding nation-state threats.</td>
+        </tr>
+        <tr>
+          <td><em>This Is How They Tell Me the World Ends</em></td>
+          <td>Nicole Perlroth</td>
+          <td>The global market for cyberweapons — journalism, policy, and technology perspectives intertwined.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-tip">
+      <strong>💡 Your Session Certificate</strong>
+      Please confirm attendance by signing the session register (physical or digital, as directed by the facilitator). A Certificate of Participation in the FDP on Information Security will be issued by the organising department within 5 working days.
+    </div>
+
+    <!-- FINAL MESSAGE -->
+    <div class="callout callout-info">
+      <strong>🏁 Thank You — You Are Now Part of the Human Firewall</strong>
+      Today you decoded Base64, inspected a real email's hidden anatomy, and discovered whether your credentials have ever been exposed in a breach. You now understand why universities are targeted, how the CIA Triad frames every security decision, and how to talk about these concepts with your students in disciplinary context. Security is not about fear — it is about knowledge, habits, and community. You have all three now. Welcome to the team.
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>Demystifying Information Security: From Concepts to Practice · Faculty Development Program</p>
+    <p style="margin-top: 0.3rem;">This webbook is intended for educational use during and after the FDP session. All external tools referenced are publicly available and not affiliated with or endorsed by this institution unless stated. For institutional security policies, consult your IT Security department.</p>
+  </div>
+
+</main>
+
+<script>
+  // Active sidebar highlight on scroll
+  const sections = document.querySelectorAll('section[id], div[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(item => {
+          item.classList.remove('active');
+          if (item.getAttribute('href') === '#' + entry.target.id) {
+            item.classList.add('active');
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

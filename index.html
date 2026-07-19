@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROBLOCKSEC Forensic Workstation — Government DFIR Platform</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body class="gov-theme">
+
+    <!-- App Wrapper -->
+    <div class="app-container">
+
+        <!-- Top Official Branding Header -->
+        <header class="top-banner">
+            <div class="logo-area">
+                <span class="logo-emblem">⚖️</span>
+                <div class="logo-text">
+                    <h1>ROBLOCKSEC FORENSICS & RESPONSE DIVISION</h1>
+                    <span class="sub-text">CLASSIFICATION: SECURE // OFFICIAL USE ONLY</span>
+                </div>
+            </div>
+            <div class="case-meta-widget" style="display:flex; align-items:center; gap:15px; margin-left:auto;">
+                <div class="meta-item">
+                    <span class="label">ASSIGNED CASE:</span>
+                    <div style="display:flex; align-items:center;">
+                        <select id="case-selector" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary); border-radius:3px; padding:4px 8px; font-size:10px; font-weight:700; cursor:pointer; font-family:inherit; text-transform:uppercase; outline:none; height:24px;">
+                            <!-- Populated dynamically via script -->
+                        </select>
+                        <button id="btn-create-case-modal" style="background:var(--accent-blue); color:white; border:none; border-radius:3px; padding:4px 8px; font-size:9px; font-weight:800; cursor:pointer; margin-left:5px; height:24px; text-transform:uppercase;">+ New</button>
+                    </div>
+                </div>
+                <div class="meta-item">
+                    <span class="label">CASE NO:</span>
+                    <span class="value text-warning" id="case-number-val" style="font-weight:700;">-</span>
+                </div>
+                <div class="meta-item">
+                    <span class="label">LEVEL:</span>
+                    <span class="badge badge-danger" id="case-severity-badge" style="font-size:9px; padding:3px 6px;">CRITICAL SEVERITY</span>
+                </div>
+                <div class="meta-item">
+                    <span class="label">SLA COUNTDOWN:</span>
+                    <span class="value text-warning" id="sla-timer" style="font-weight:700;">01:19:35</span>
+                </div>
+                <div class="meta-item">
+                    <span class="label">INTEGRITY CHECK:</span>
+                    <span class="value text-safe" style="font-weight:700;">✓ SECURED</span>
+                </div>
+                
+                <!-- Investigator Profile Section -->
+                <div class="meta-item" style="position:relative; margin-left:10px;">
+                    <div id="profile-badge-btn" style="display:flex; align-items:center; gap:6px; cursor:pointer; background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:15px; border:1px solid var(--border-color); font-size:10px; font-weight:700; color:var(--text-primary); transition: background 0.2s;">
+                        <span style="font-size:11px;">👤</span>
+                        <span>AGENT SMITH</span>
+                    </div>
+                    <!-- User Profile Dropdown Overlay -->
+                    <div id="profile-overlay-card" style="display:none; position:absolute; right:0; top:35px; width:220px; background:var(--bg-panel); border:1px solid var(--border-color); border-radius:4px; box-shadow:0 8px 24px rgba(0,0,0,0.4); padding:15px; z-index:100; font-size:11px; line-height:1.4;">
+                        <div style="text-align:center; margin-bottom:12px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+                            <div style="font-size:24px; margin-bottom:4px;">👤</div>
+                            <div style="font-weight:800; color:var(--text-primary); font-size:12px;">Agent Smith</div>
+                            <div style="font-size:9.5px; color:var(--text-secondary); font-weight:600;">Lead Incident Responder</div>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:6px; color:var(--text-secondary);">
+                            <div><strong>Agency:</strong> ROBLOCKSEC Cyber Command</div>
+                            <div><strong>Clearance:</strong> Level 5 - TOP SECRET // SCI</div>
+                            <div><strong>Badge No:</strong> RB-9842</div>
+                            <div><strong>Session Expiry:</strong> <span style="color:var(--color-warning); font-weight:700;" id="profile-session-timer">01:19:35</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Top Horizontal Navigation Tabs -->
+        <nav class="horizontal-nav">
+            <ul class="nav-links">
+                <li class="nav-item active" data-tab="overview">
+                    <span>Overview & Dashboard</span>
+                </li>
+                <li class="nav-item" data-tab="timeline">
+                    <span>Chronological Timeline</span>
+                </li>
+                <li class="nav-item" data-tab="memory">
+                    <span>Memory (Volatility 3)</span>
+                </li>
+                <li class="nav-item" data-tab="network">
+                    <span>Network (Zeek / Suricata)</span>
+                </li>
+                <li class="nav-item" data-tab="reverse">
+                    <span>Malware Decompiler</span>
+                </li>
+                <li class="nav-item" data-tab="yara">
+                    <span>YARA Signature Manager</span>
+                </li>
+                <li class="nav-item" data-tab="audit">
+                    <span>System Audit Ledger</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- 3-Column Split Workspace -->
+        <div class="main-workspace">
+
+            <!-- Column 1: Collapsible Left Folder/Evidence Tree Explorer -->
+            <aside class="evidence-explorer">
+                <div class="explorer-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4>Evidence Repository</h4>
+                    <button id="upload-btn" style="background:var(--accent-blue); color:white; border:none; border-radius:3px; padding:3px 8px; font-size:9px; font-weight:800; cursor:pointer; text-transform:uppercase;">+ Ingest</button>
+                    <input type="file" id="evidence-file-input" style="display:none;">
+                </div>
+                <div class="explorer-tree">
+                    <div class="tree-section">
+                        <span class="section-title">📂 Case Folder Assets</span>
+                        <ul class="tree-list">
+                            <li class="tree-item file-e01 active" id="tree-disk-img">
+                                <span class="file-label"><span class="file-icon">💾</span> ws01_disk.e01</span>
+                                <button class="btn-generate-report" title="Generate Forensic Report">📄</button>
+                            </li>
+                            <li class="tree-item file-raw" id="tree-mem-img">
+                                <span class="file-label"><span class="file-icon">🧠</span> win11_mem.raw</span>
+                                <button class="btn-generate-report" title="Generate Forensic Report">📄</button>
+                            </li>
+                            <li class="tree-item file-pcap" id="tree-traffic-pcap">
+                                <span class="file-label"><span class="file-icon">🔌</span> traffic.pcap</span>
+                                <button class="btn-generate-report" title="Generate Forensic Report">📄</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="tree-section">
+                        <span class="section-title">📂 Extracted System Hives</span>
+                        <ul class="tree-list">
+                            <li class="tree-item file-hive" id="tree-sam-hive">
+                                <span class="file-label"><span class="file-icon">🔑</span> SAM Hive</span>
+                                <button class="btn-generate-report" title="Generate Forensic Report">📄</button>
+                            </li>
+                            <li class="tree-item file-hive" id="tree-sys-hive">
+                                <span class="file-label"><span class="file-icon">⚙️</span> SYSTEM Hive</span>
+                                <button class="btn-generate-report" title="Generate Forensic Report">📄</button>
+                            </li>
+                            <li class="tree-item file-exe" id="tree-updater-bin">
+                                <span class="file-label"><span class="file-icon">☣️</span> updater.exe</span>
+                                <button class="btn-generate-report" title="Generate Forensic Report">📄</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Ingestion Status Panel -->
+                <div class="ingestion-status-panel" id="ingest-progress-box" style="display:none; padding:15px; border-top:1px solid var(--border-color); background:var(--bg-input);">
+                    <div style="display:flex; justify-content:space-between; font-size:9px; font-weight:800; color:var(--text-secondary); margin-bottom:6px;">
+                        <span>INGESTION PIPELINE</span>
+                        <span id="ingest-percent">0%</span>
+                    </div>
+                    <div style="height:4px; background:rgba(0,0,0,0.1); border-radius:2px; overflow:hidden; margin-bottom:8px;">
+                        <div id="ingest-progress-bar" style="width:0%; height:100%; background:var(--accent-blue); transition:width 0.2s ease;"></div>
+                    </div>
+                    <div id="ingest-status-text" style="font-size:9px; color:var(--text-primary); font-weight:600; line-height:1.3;">Initial Access check...</div>
+                </div>
+            </aside>
+
+            <!-- Column 2: Center Focus Canvas -->
+            <main class="viewport">
+
+                <!-- TAB 1: OVERVIEW -->
+                <section class="tab-panel active" id="panel-overview">
+                    <div class="metrics-grid">
+                        <div class="panel-card">
+                            <span class="card-label">Threat Severity Assessment</span>
+                            <div class="big-value text-danger">CRITICAL</div>
+                            <span class="sub-alert text-danger">● Containment Actions Required</span>
+                        </div>
+                        <div class="panel-card">
+                            <span class="card-label">Evidence Verification Status</span>
+                            <div class="big-value text-safe">VERIFIED</div>
+                            <span class="sub-alert text-secondary">All digital signatures match</span>
+                        </div>
+                        <div class="panel-card">
+                            <span class="card-label">Security Incidents Alerts</span>
+                            <div class="big-value text-warning" id="yara-matches-count">3 Indicators</div>
+                            <span class="sub-alert text-warning">Matched threat profile signature</span>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-split">
+                        <!-- Alert Table -->
+                        <div class="panel-card flex-2">
+                            <h3 class="panel-title">Forensic Audit Log - Flags</h3>
+                            <div class="table-container">
+                                <table class="forensic-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Target Entity</th>
+                                            <th>Ingest Source</th>
+                                            <th>MITRE Technique</th>
+                                            <th>Alert Detail Log</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="table-row-danger">
+                                            <td>12:00:10 UTC</td>
+                                            <td>CHIMERA-SRV-02</td>
+                                            <td>ws01_disk.e01</td>
+                                            <td>T1486 (Ransomware)</td>
+                                            <td>Encryption payload logged (HELP_DECRYPT.txt)</td>
+                                        </tr>
+                                        <tr class="table-row-danger">
+                                            <td>11:30:45 UTC</td>
+                                            <td>CHIMERA-SRV-02</td>
+                                            <td>traffic.pcap</td>
+                                            <td>T1048 (Exfiltration)</td>
+                                            <td>Exfiltration DNS tunneling queries detected</td>
+                                        </tr>
+                                        <tr class="table-row-warning">
+                                            <td>11:00:22 UTC</td>
+                                            <td>CHIMERA-SRV-02</td>
+                                            <td>SYSTEM Hive</td>
+                                            <td>T1547.001 (Registry Run)</td>
+                                            <td>Persistence key created: C:\Windows\Temp\updater.exe</td>
+                                        </tr>
+                                        <tr class="table-row-warning">
+                                            <td>09:30:15 UTC</td>
+                                            <td>CHIMERA-WS-01</td>
+                                            <td>win11_mem.raw</td>
+                                            <td>T1003.001 (LSASS Dump)</td>
+                                            <td>LSASS injected via system process GPUPDATE.EXE</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- MITRE ATT&CK Heatmap Grid -->
+                        <div class="panel-card flex-1" style="display:flex; flex-direction:column;">
+                            <h3 class="panel-title">MITRE ATT&CK Mapping</h3>
+                            <div class="mitre-grid" id="mitre-matrix-container">
+                                <div class="mitre-cell active" data-tech="T1566" title="T1566: Phishing Initial Entry">Initial Access</div>
+                                <div class="mitre-cell active" data-tech="T1204" title="T1204: User Execution (Resume_Review.zip)">Execution</div>
+                                <div class="mitre-cell active" data-tech="T1547" title="T1547: Registry Run Keys Persistence">Persistence</div>
+                                <div class="mitre-cell" data-tech="T1078" title="T1078: Valid Accounts Escalation">Priv Esc</div>
+                                <div class="mitre-cell" data-tech="T1140" title="T1140: Deobfuscate/Decode Strings">Def Evasion</div>
+                                <div class="mitre-cell active" data-tech="T1003.001" title="T1003.001: LSASS Memory Dump Process Injections">Cred Access</div>
+                                <div class="mitre-cell" data-tech="T1046" title="T1046: Network Service Scanning Discovery">Discovery</div>
+                                <div class="mitre-cell active" data-tech="T1021.002" title="T1021.002: Remote Desktop (RDP) Lateral Entry">Lat Movement</div>
+                                <div class="mitre-cell" data-tech="T1114" title="T1114: Email Collection Data Harvesting">Collection</div>
+                                <div class="mitre-cell active" data-tech="T1048" title="T1048: DNS Subdomain Tunneling Exfiltration">Exfiltration</div>
+                                <div class="mitre-cell active" data-tech="T1486" title="T1486: Ransomware File Encryption Impact">Impact</div>
+                            </div>
+                            <div id="mitre-detail-card" style="margin-top:12px; padding:10px; border-radius:3px; background:var(--bg-input); border-left:3px solid var(--accent-blue); display:none;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; font-size:9.5px; font-weight:800; color:var(--text-secondary); margin-bottom:4px;">
+                                    <span id="mitre-tech-id">T1000</span>
+                                    <span style="color:var(--accent-blue); cursor:pointer;" id="close-mitre-card">[x]</span>
+                                </div>
+                                <div style="font-size:11px; font-weight:700; color:var(--text-primary); margin-bottom:4px;" id="mitre-tech-name">Technique Name</div>
+                                <div style="font-size:9.5px; color:var(--text-secondary); line-height:1.4;" id="mitre-tech-desc">Click any highlighted cell to overlay matching evidence blocks and mitigation briefs.</div>
+                            </div>
+                    <!-- OSINT & Threat Intel Console -->
+                    <div class="panel-card" style="margin-top:20px; display:flex; flex-direction:column; gap:12px;">
+                        <h3 class="panel-title">Threat Intelligence & OSINT API Console (VirusTotal Engine)</h3>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" id="osint-query-input" placeholder="Query threat signature (e.g. 185.220.101.4, exfil-dns-tunnel.net, or file SHA-256)..." style="flex:1; background:var(--bg-input); border:1px solid var(--border-color); border-radius:3px; padding:8px 12px; color:var(--text-primary); font-size:11px; font-family:'JetBrains Mono', monospace;">
+                            <button class="send-btn" id="osint-search-btn" style="width:120px; font-size:10px; text-transform:uppercase; height:32px;">Search API</button>
+                        </div>
+                        <div id="osint-results-box" style="display:none; background:var(--bg-input); border-radius:3px; padding:15px; border-left:3px solid var(--accent-blue); font-size:11px; line-height:1.5;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px; border-bottom:1px solid var(--border-color); padding-bottom:6px;">
+                                <strong id="osint-result-type" style="color:var(--text-primary); text-transform:uppercase;">IP REPUTATION SUMMARY</strong>
+                                <span id="osint-result-score" style="font-weight:800; font-size:11px;">0/72 AV DETECTIONS</span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                                <div>
+                                    <div style="color:var(--text-secondary); font-size:9.5px; font-weight:800;">THREAT CLASSIFICATION TAGS</div>
+                                    <div id="osint-result-tags" style="margin-top:4px; display:flex; gap:6px; flex-wrap:wrap;">-</div>
+                                </div>
+                                <div>
+                                    <div style="color:var(--text-secondary); font-size:9.5px; font-weight:800;">REGISTRAR / WHOIS METADATA</div>
+                                    <div id="osint-result-registrar" style="margin-top:4px; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--text-secondary);">-</div>
+                                </div>
+                            </div>
+                            <div style="margin-top:10px;">
+                                <div style="color:var(--text-secondary); font-size:9.5px; font-weight:800; margin-bottom:4px;">VIRUSTOTAL ANALYSIS REPORT</div>
+                                <div id="osint-result-summary" style="color:var(--text-secondary); line-height:1.4;">No threat data query executed.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: TIMELINE -->
+                <section class="tab-panel" id="panel-timeline">
+                    <div class="filter-bar">
+                        <input type="text" placeholder="Filter timeline (e.g. process name, ip address)..." class="search-input" id="timeline-search">
+                        <div class="checkbox-filters">
+                            <label><input type="checkbox" checked class="timeline-filter" value="PROCESS"> Processes</label>
+                            <label><input type="checkbox" checked class="timeline-filter" value="NETWORK"> Connections</label>
+                            <label><input type="checkbox" checked class="timeline-filter" value="REGISTRY"> Registry</label>
+                        </div>
+                    </div>
+                    <div class="panel-card timeline-card">
+                        <div class="console-box" id="timeline-events-container">
+                            <!-- Populated via script -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: MEMORY FORENSICS -->
+                <section class="tab-panel" id="panel-memory">
+                    <div class="dashboard-split">
+                        <div class="panel-card flex-2">
+                            <h3 class="panel-title">Volatility 3 Execution Tree</h3>
+                            <div class="process-tree-box" id="process-tree-container">
+                                <!-- Populated via script -->
+                            </div>
+                        </div>
+                        <div class="panel-card flex-1">
+                            <h3 class="panel-title">Active Handles & Loaded DLLs (PID: 884)</h3>
+                            <div class="dll-list-box" id="dll-list-container">
+                                <!-- Populated via script -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: NETWORK PCAP -->
+                <section class="tab-panel" id="panel-network">
+                    <div class="panel-card">
+                        <h3 class="panel-title">Zeek Network Connection Analyzer</h3>
+                        <div class="table-container">
+                            <table class="forensic-table">
+                                <thead>
+                                    <tr>
+                                        <th>Source Host IP</th>
+                                        <th>Source Port</th>
+                                        <th>Destination IP</th>
+                                        <th>Destination Port</th>
+                                        <th>Protocol</th>
+                                        <th>Data Volume</th>
+                                        <th>Connection Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="network-flows-container">
+                                    <!-- Populated via script -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 5: DECOMPILER -->
+                <section class="tab-panel" id="panel-reverse">
+                    <div class="re-workspace">
+                        <div class="re-sidebar">
+                            <h4>Parsed Symbols</h4>
+                            <ul class="re-function-list">
+                                <li class="re-func-item active">_main</li>
+                                <li class="re-func-item">_setup_persistence</li>
+                                <li class="re-func-item">_decode_strings</li>
+                                <li class="re-func-item">_resolve_c2_address</li>
+                                <li class="re-func-item">_exfil_data</li>
+                                <li class="re-func-item">_encrypt_files</li>
+                            </ul>
+                        </div>
+                        <div class="re-code-pane">
+                            <div class="re-code-header" style="display:flex; justify-content:space-between; align-items:center;">
+                                <div style="display:flex; gap:10px;">
+                                    <span class="active-file active-subtab" id="subtab-decompiler" style="cursor:pointer; font-weight:700;">Decompiled Code</span>
+                                    <span class="active-file" id="subtab-hex" style="cursor:pointer; color:var(--text-secondary);">Binary Hex Editor</span>
+                                </div>
+                                <span class="risk-badge badge-danger">Unverified Execution Block</span>
+                            </div>
+                            <pre class="code-view" id="decompiler-code-container"><code id="code-content-element">
+// Decoded via Ghidra HEADLESS
+void _setup_persistence(void) {
+    HKEY hKey;
+    char* runKey = "Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+    char* binaryPath = "C:\\Windows\\Temp\\updater.exe";
+    
+    // Attempt registry modification
+    long status = RegOpenKeyExA(HKEY_LOCAL_MACHINE, runKey, 0, KEY_WRITE, &hKey);
+    if (status == 0) {
+        RegSetValueExA(hKey, "SystemUpdate", 0, REG_SZ, (const BYTE*)binaryPath, strlen(binaryPath));
+        RegCloseKey(hKey);
+        log_security_audit("Persistence registry entry updated.");
+    }
+    return;
+}
+                            </code></pre>
+                            <!-- Hex Viewer Container -->
+                            <div id="hex-view-container" style="display:none; height:320px; overflow-y:auto; font-family:'JetBrains Mono', monospace; font-size:10.5px; line-height:1.4; background:var(--bg-input); padding:15px; border-radius:3px; color:var(--text-primary); white-space:pre; border:1px solid var(--border-color);">
+                                <!-- Dynamic hex values list -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 6: AUDIT LEDGER -->
+                <section class="tab-panel" id="panel-audit">
+                    <div class="panel-card">
+                        <h3 class="panel-title">Integrity Verification Audit Log</h3>
+                        <div class="console-box" id="audit-log-container">
+                            <!-- Populated via script -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 7: YARA SIGNATURE MANAGER -->
+                <section class="tab-panel" id="panel-yara">
+                    <div class="panel-card" style="display:flex; flex-direction:column; gap:15px;">
+                        <h3 class="panel-title">YARA Custom Signature Index & Live Compiler</h3>
+                        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <label style="font-size:10px; font-weight:800; color:var(--text-secondary);">CUSTOM YARA RULE EDITOR</label>
+                                <textarea id="yara-rule-editor" style="width:100%; height:260px; background:var(--bg-input); color:var(--text-primary); border:1px solid var(--border-color); border-radius:3px; padding:10px; font-family:'JetBrains Mono', monospace; font-size:11px; resize:none; line-height:1.4;">rule CustomThreatScanner {
+    meta:
+        description = "Detects obfuscated secondary credentials dump patterns"
+        severity = "CRITICAL"
+        mitre_technique = "T1003.001"
+    strings:
+        $mimikatz = "mimikatz" nocase
+        $lsass = "lsass" nocase
+    condition:
+        any of them
+}</textarea>
+                                <div style="display:flex; gap:10px; align-items:center;">
+                                    <button class="send-btn" id="yara-compile-btn" style="width:160px; font-size:10px; text-transform:uppercase;">Compile & Register</button>
+                                    <div id="yara-status-indicator" style="font-size:10px; font-weight:800;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size:10px; font-weight:800; color:var(--text-secondary); display:block; margin-bottom:10px;">COMPILED SIGNATURE DATABASE</label>
+                                <div class="console-box" id="yara-rules-list" style="height:290px; overflow-y:auto; font-family:'JetBrains Mono', monospace; font-size:10.5px; padding:10px; border:1px solid var(--border-color);">
+                                    <!-- Dynamic signatures list -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+
+            <!-- Column 3: Right AI Investigator Copilot Pane -->
+            <aside class="copilot-panel">
+                <div class="copilot-header">
+                    <span class="copilot-icon">🛡️</span>
+                    <h3>Forensic Assistant AI</h3>
+                </div>
+                <div class="copilot-messages" id="copilot-chat-box">
+                    <div class="chat-bubble ai-bubble">
+                        I am initialized as your Forensic Intelligence Assistant. I have indexed all logs, memory maps, and disk registry artifacts for this case. Ask me to cross-reference evidence or trace persistence.
+                    </div>
+                </div>
+                <div class="quick-prompts">
+                    <button class="prompt-chip" data-prompt="Find persistence in the registry and filesystem">Find persistence</button>
+                    <button class="prompt-chip" data-prompt="Trace suspicious memory anomalies in volatility logs">Check LSASS anomaly</button>
+                    <button class="prompt-chip" data-prompt="Show exfiltrated DNS payloads in network capture logs">Exfiltration flow</button>
+                    <button class="prompt-chip" data-prompt="Summarize the full attack narrative for court report">Compile Brief</button>
+                </div>
+                <div class="copilot-input-area">
+                    <input type="text" placeholder="Enter query..." class="copilot-input" id="copilot-chat-input">
+                    <button class="send-btn" id="copilot-send-btn">Submit</button>
+                </div>
+            </aside>
+
+        </div>
+
+    </div>
+
+    <!-- Create New Case Modal Overlay -->
+    <div id="create-case-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:var(--bg-panel); border:1px solid var(--border-color); border-radius:4px; padding:20px; width:340px; box-shadow:0 12px 32px rgba(0,0,0,0.5);">
+            <h3 style="margin-top:0; border-bottom:1px solid var(--border-color); padding-bottom:8px; font-size:12px; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.5px;">Initialize New Forensic Case</h3>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px; font-size:11px;">
+                <label style="color:var(--text-secondary); font-weight:700;">CASE NAME / ID</label>
+                <input type="text" id="new-case-name" placeholder="e.g. CASE_2026_HEURISTIC_SWEEP" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary); padding:6px 10px; border-radius:3px; font-family:'JetBrains Mono', monospace; font-size:11px; outline:none;">
+                
+                <label style="color:var(--text-secondary); font-weight:700;">CASE NUMBER</label>
+                <input type="text" id="new-case-number" placeholder="e.g. RB-2026-0004" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary); padding:6px 10px; border-radius:3px; font-family:'JetBrains Mono', monospace; font-size:11px; outline:none;">
+                
+                <label style="color:var(--text-secondary); font-weight:700;">SEVERITY LEVEL</label>
+                <select id="new-case-severity" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary); padding:6px 10px; border-radius:3px; outline:none;">
+                    <option value="CRITICAL">CRITICAL</option>
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
+                </select>
+                
+                <label style="color:var(--text-secondary); font-weight:700;">INCIDENT PRIORITY</label>
+                <select id="new-case-priority" style="background:var(--bg-input); border:1px solid var(--border-color); color:var(--text-primary); padding:6px 10px; border-radius:3px; outline:none;">
+                    <option value="HIGH">HIGH</option>
+                    <option value="MEDIUM">MEDIUM</option>
+                    <option value="LOW">LOW</option>
+                </select>
+                
+                <div id="new-case-error" style="color:var(--color-danger); font-size:9.5px; font-weight:800; display:none; margin-top:5px;">Error message</div>
+                
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
+                    <button class="send-btn" id="new-case-cancel" style="background:rgba(255,255,255,0.05); color:var(--text-primary); border:1px solid var(--border-color); font-size:10px; height:30px; text-transform:uppercase;">Cancel</button>
+                    <button class="send-btn" id="new-case-submit" style="font-size:10px; height:30px; text-transform:uppercase;">Initialize</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forensic Report Viewer Modal Overlay -->
+    <div id="report-viewer-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center;">
+        <div style="background:var(--bg-panel); border:1px solid var(--border-color); border-radius:4px; padding:20px; width:700px; max-width:90%; height:80%; display:flex; flex-direction:column; box-shadow:0 16px 48px rgba(0,0,0,0.6);">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:10px; margin-bottom:15px;">
+                <h3 style="margin:0; font-size:12px; color:var(--text-primary); text-transform:uppercase; letter-spacing:0.5px; font-weight:800;">⚖️ OFFICIAL DFIR FORENSIC REPORT GENERATOR</h3>
+                <span style="font-size:9.5px; font-weight:800; color:var(--color-danger); border:1px solid var(--color-danger); padding:2px 6px; border-radius:3px;">SECRET // OFFICIAL USE ONLY</span>
+            </div>
+            
+            <div id="report-modal-content" style="flex:1; overflow-y:auto; background:var(--bg-app); border:1px solid var(--border-color); padding:20px; border-radius:4px; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-primary); line-height:1.5; white-space:pre-wrap; text-align:left;">
+                Report content will load here...
+            </div>
+            
+            <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:15px; border-top:1px solid var(--border-color); padding-top:12px;">
+                <button class="send-btn" id="report-modal-close" style="background:rgba(255,255,255,0.05); color:var(--text-primary); border:1px solid var(--border-color); font-size:10px; height:30px; text-transform:uppercase;">Close</button>
+                <button class="send-btn" id="report-modal-download" style="font-size:10px; height:30px; text-transform:uppercase; background:var(--accent-blue);">Download Report (.md)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Source -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
